@@ -13,16 +13,18 @@
 - https://coderjourney.com/deploy-docker-digital-ocean/
 - https://coderjourney.com/convert-rails-app-to-docker/
 
-### Useful gems http://blog.planetargon.com/entries/8-useful-ruby-on-rails-gems-we-couldnt-live-without
-- Pundit – User Authorization
-- WebPacker – Javascript Management
-- Smarter CSV – CSV Import
-- Bundler – Audit
-- Rails ERD – ActiveRecord Diagrams
-- Chartkick – Chart Creator
-- Annotate – Annotate Rails Classes
-- hobo_fields (annotate adds comments from the schema. hobo_fields creates migrations from models.)
-- MetaTags – SEO-Friendly Rails Apps
+### Useful gems
+
+- http://blog.planetargon.com/entries/8-useful-ruby-on-rails-gems-we-couldnt-live-without
+    - Pundit – User Authorization
+    - WebPacker – Javascript Management
+    - Smarter CSV – CSV Import
+    - Bundler – Audit
+    - Rails ERD – ActiveRecord Diagrams
+    - Chartkick – Chart Creator
+    - Annotate – Annotate Rails Classes
+    - hobo_fields (annotate adds comments from the schema. hobo_fields creates migrations from models.)
+    - MetaTags – SEO-Friendly Rails Apps
 
 
 ### CI with Digital Ocean
@@ -55,27 +57,30 @@ http://staxmanade.com/2016/07/run-multiple-docker-environments--qa--beta--prod--
 
     $ docker-compose build ruby
     $ docker-compose build
+    $ docker-compose run app bundle install
     $ docker-compose run app rake db:create db:migrate
-    # docker-compose run app rake db:drop db:create db:migrate
+    $ docker-compose run app rake db:drop db:create db:migrate
 
 ### Added Spree (it adds Devise as well; no need to install Devise separately)
 
     $ docker-compose run app rails g spree:install --user_class=Spree::User
-
-        Email [spree@example.com]: mark@kreyman.com
-        Password [spree123]:
-
     $ docker-compose run app rails g spree:auth:install
     $ docker-compose run app rails g spree_gateway:install
     $ docker-compose run app rake db:migrate
 
-    $ docker-compose up
-    $ docker exec -it app /bin/bash
+    $ docker-compose up -d
 
 ### Accessing shell
 
     $ docker exec -it app /bin/bash
     $ docker-compose run web /bin/bash
+
+### Seed Spree again after db wipeout
+
+    $ docker-compose run app bundle exec rake railties:install:migrations
+    $ docker-compose run app bundle exec rake db:migrate
+    $ docker-compose run app bundle exec rake db:seed
+    $ docker-compose run app bundle exec rake spree_sample:load
 
 ### Encrypt with SSL
 
