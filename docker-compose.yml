@@ -1,0 +1,82 @@
+version: '2'
+services:
+  ruby:
+    # Build this first with 'docker-compose build ruby' for its image used in app's Dockerfile
+    build:
+      context: .
+      dockerfile: config/containers/Dockerfile.ruby
+    image: hotroll/ruby
+    container_name: ruby
+    command: echo I am a temp ruby container...
+  app:
+    build:
+      context: .
+      dockerfile: config/containers/Dockerfile.app
+    image: hotroll/app
+    container_name: app
+    expose:
+     - "3000"
+    volumes:
+     - .:/var/www/hotroll
+    volumes_from:
+     - bundle
+    depends_on:
+      - postgres
+      - redis
+    links:
+      - postgres:postgres.local
+      - redis:redis.local
+    env_file:
+      - .env
+    environment:
+      RAILS_ENV: $RAILS_ENV
+  bundle:
+    image: hotroll/app
+    container_name: bundle
+    command: echo I am a little data container...
+    volumes:
+      - /bundle
+  postgres:
+    image: postgres:9.6
+    container_name: postgres
+    restart: always
+    # ports are in the HOST:CONTAINER format
+    ports:
+     - "6432:5432"
+    volumes:
+     - postgres:/var/lib/postgresql/data
+    env_file:
+      - .env
+    environment:
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+  redis:
+    image: redis
+    container_name: redis
+    restart: always
+    expose:
+     - "6379"
+    volumes:
+      - redis:/var/lib/redis/data
+  web:
+    build:
+      context: .
+      dockerfile: config/containers/Dockerfile.nginx
+    image: hotroll/nginx
+    container_name: nginx
+    # restart: always
+    # enable Let's Encrypt by default
+    environment:
+      CA_SSL: "true" # change to "false" for development
+    links:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    # persist SSL certificates in $SSL_ROOT
+    volumes:
+      - hotroll-ssl:/var/www/ssl
+      - ./config/containers/web_cmd.sh:/var/www/hotroll/config/containers/web_cmd.sh
+volumes:
+  redis:
+  postgres:
+  hotroll-ssl:
